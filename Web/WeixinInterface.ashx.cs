@@ -1,9 +1,13 @@
-﻿using Deepleo.Weixin.SDK;
+﻿using Codeplex.Data;
+using Deepleo.Weixin.SDK;
+using Deepleo.Weixin.SDK.Helpers;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Web;
+using System.Web.Script.Serialization;
 
 namespace Web
 {
@@ -11,6 +15,7 @@ namespace Web
     {
         HttpContext context = null;
         string echostr;
+        public static TokenHelper tokenhelper = new TokenHelper(3600, AppConfig.AppId, AppConfig.AppSecret);
         public void ProcessRequest(HttpContext param_context)
         {
             context = param_context;
@@ -42,7 +47,7 @@ namespace Web
             var signature = context.Request["signature"].ToString();
             var timestamp = context.Request["timestamp"].ToString();
             var nonce = context.Request["nonce"].ToString();
-            var token = System.Configuration.ConfigurationManager.AppSettings["Token"];
+            var token = AppConfig.Token;
             if (string.IsNullOrEmpty(token))
             {
                 context.Response.ContentType = "text/plain";

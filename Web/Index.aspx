@@ -1,138 +1,194 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Index.aspx.cs" Inherits="Web.Index" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="WebForm1.aspx.cs" Inherits="Web.WebForm1" %>
 
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <link rel="stylesheet" href="css/m.css" type="text/css" media="screen" />
-    <link rel="stylesheet" href="css/n.css" type="text/css" media="screen" />    <script type="text/javascript" src="js/jq.js"></script>
-    <script type="text/javascript" src="js/m.js"></script>
-    <title></title>
+    <title>苏州康力-2015年抽奖活动</title>
+    <link href="css/imgbox.css" type="text/css" rel="stylesheet" />
+    <style type="text/css">
+        #lottery {
+            width: auto;
+            height: auto;
+            margin: 20px auto 0;
+            /*background: url(images/bg.jpg) no-repeat;*/
+            padding: 50px 55px;
+        }
+
+            #lottery table td {
+                width: 142px;
+                height: 142px;
+                text-align: center;
+                vertical-align: middle;
+                font-size: 24px;
+                color: #333;
+                font-index: -999;
+            }
+
+        #start {
+            width: 284px;
+            height: 284px;
+            line-height: 150px;
+            display: block;
+            text-decoration: none;
+        }
+
+        #lottery table td.active {
+            background-color: #ea0000;
+        }
+    </style>
+
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery.imgbox.js"></script>
     <script type="text/javascript">
-        ref_time = 12;//刷新时间
-        run = false;//是否进入就播放
-        init_qrcode = false;//是否进入显示二维码
-        lid = "";//起始id
-        colors = "";//颜色
-        site_name = "";
-        wechat_name = "";
-        act_word = "";
-        re_luck = "";
-        vote_auto_zoom = "";
+
+        $(function () {
+            $(".lottery-unit-a").imgbox({
+                'speedIn': 2,
+                'fixwidth': 300,
+                'fixheight': 500,
+                'fixtop': 200,
+                'fixleft': 700
+            });
+        });
+
+        var lottery = {
+            index: -1,	//当前转动到哪个位置，起点位置
+            count: 0,	//总共有多少个位置
+            timer: 0,	//setTimeout的ID，用clearTimeout清除
+            speed: 20,	//初始转动速度
+            times: 0,	//转动次数
+            runing: false,	//转动基本次数：即至少需要转动多少次再进入抽奖环节
+            prize: -1,	//中奖位置
+            init: function (id) {
+                if ($("#" + id).find(".lottery-unit").length > 0) {
+                    $lottery = $("#" + id);
+                    $units = $lottery.find(".lottery-unit");
+                    this.obj = $lottery;
+                    this.count = $units.length;
+                    $lottery.find(".lottery-unit-" + this.index).addClass("active");
+                };
+            },
+            roll: function () {
+                var index = this.index;
+                var count = this.count;
+                var lottery = this.obj;
+                $(lottery).find(".lottery-unit-" + index).removeClass("active");
+                index += 1;
+                if (index > count - 1) {
+                    index = 0;
+                };
+                $(lottery).find(".lottery-unit-" + index).addClass("active");
+                this.index = index;
+                return false;
+            },
+            stop: function (index) {
+                this.prize = index;
+                $(".lottery-unit-" + this.prize + " a").click();
+                clearTimeout(lottery.timer);
+                return false;
+            }
+        };
+
+        function roll() {
+            if (!lottery.runing) {
+                return false;
+            }
+            lottery.times += 1;
+            lottery.roll();
+            lottery.timer = setTimeout(roll, lottery.speed);
+            return false;
+        }
+        function start() {
+            if (lottery.runing) {
+                return;
+            }
+            lottery.init('lottery');
+            lottery.speed = 100;
+            lottery.runing = true;
+            roll();
+        }
+        function stop() {
+            lottery.runing = false;
+            lottery.stop(lottery.index);
+        }
+
+        var click = false;
+        window.onload = function () {
+            lottery.init('lottery');
+            $("#start").click(function () {
+                if (click) {
+                    stop();
+                    click = false;
+                } else {
+                    start();
+                    click = true;
+                }
+                return false;
+            });
+        };
     </script>
 </head>
 <body>
-    <div class="main">
-        <!-- 头部 -->
-        <div class="head">
-            <div class="head_left">
-                <div class="head_info">
-                    <h1>site_name</h1>
-                </div>
-                <div class="head_flag"></div>
-            </div>
-
-            <div class="head_right">
-                <img alt="bababa" src="img/bullhorn.png" />
-                <h2>添加</h2>
-                <h1>wechat_name</h1>
-                <h3>发送<span>act_word 你想说的话</span>即可上墙</h3>
-            </div>
-            <div class="clear"></div>
+    <form id="form1" runat="server">
+        <div id="lottery">
+            <table border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td class="lottery-unit lottery-unit-0"><a href="images/3793633099_3e1e53e4ac_o.jpg" class="lottery-unit-a">
+                        <img src="images/1.png" /></a></td>
+                    <td class="lottery-unit lottery-unit-1"><a href="images/3793633099_3e1e53e4ac_o.jpg" class="lottery-unit-a">
+                        <img src="images/2.png" /></a></td>
+                    <td class="lottery-unit lottery-unit-2"><a href="images/3793633099_3e1e53e4ac_o.jpg" class="lottery-unit-a">
+                        <img src="images/4.png" /></a></td>
+                    <td class="lottery-unit lottery-unit-3"><a href="images/3793633099_3e1e53e4ac_o.jpg" class="lottery-unit-a">
+                        <img src="images/3.png" /></a></td>
+                </tr>
+                <tr>
+                    <td class="lottery-unit lottery-unit-4"><a href="images/3793633099_3e1e53e4ac_o.jpg" class="lottery-unit-a">
+                        <img src="images/1.png" /></a></td>
+                    <td class="lottery-unit lottery-unit-5"><a href="images/3793633099_3e1e53e4ac_o.jpg" class="lottery-unit-a">
+                        <img src="images/2.png" /></a></td>
+                    <td class="lottery-unit lottery-unit-6"><a href="images/3793633099_3e1e53e4ac_o.jpg" class="lottery-unit-a">
+                        <img src="images/4.png" /></a></td>
+                    <td class="lottery-unit lottery-unit-7"><a href="images/3793633099_3e1e53e4ac_o.jpg" class="lottery-unit-a">
+                        <img src="images/3.png" /></a></td>
+                </tr>
+                <tr>
+                    <td class="lottery-unit lottery-unit-8"><a href="images/3793633099_3e1e53e4ac_o.jpg" class="lottery-unit-a">
+                        <img src="images/7.png" /></a></td>
+                    <td colspan="2" rowspan="2"><a id="start" href="#">点我开始吧</a></td>
+                    <td class="lottery-unit lottery-unit-9"><a href="images/3793633099_3e1e53e4ac_o.jpg" class="lottery-unit-a">
+                        <img src="images/5.png" /></a></td>
+                </tr>
+                <tr>
+                    <td class="lottery-unit lottery-unit-10"><a href="images/3793633099_3e1e53e4ac_o.jpg" class="lottery-unit-a">
+                        <img src="images/1.png" /></a></td>
+                    <td class="lottery-unit lottery-unit-11"><a href="images/3793633099_3e1e53e4ac_o.jpg" class="lottery-unit-a">
+                        <img src="images/6.png" /></a></td>
+                </tr>
+                <tr>
+                    <td class="lottery-unit lottery-unit-12"><a href="images/3793633099_3e1e53e4ac_o.jpg" class="lottery-unit-a">
+                        <img src="images/3.png" /></a></td>
+                    <td class="lottery-unit lottery-unit-13"><a href="images/3793633099_3e1e53e4ac_o.jpg" class="lottery-unit-a">
+                        <img src="images/6.png" /></a></td>
+                    <td class="lottery-unit lottery-unit-14"><a href="images/3793633099_3e1e53e4ac_o.jpg" class="lottery-unit-a">
+                        <img src="images/8.png" /></a></td>
+                    <td class="lottery-unit lottery-unit-15"><a href="images/3793633099_3e1e53e4ac_o.jpg" class="lottery-unit-a">
+                        <img src="images/7.png" /></a></td>
+                </tr>
+                <tr>
+                    <td class="lottery-unit lottery-unit-16"><a href="images/3793633099_3e1e53e4ac_o.jpg" class="lottery-unit-a">
+                        <img src="images/3.png" /></a></td>
+                    <td class="lottery-unit lottery-unit-17"><a href="images/3793633099_3e1e53e4ac_o.jpg" class="lottery-unit-a">
+                        <img src="images/6.png" /></a></td>
+                    <td class="lottery-unit lottery-unit-18"><a href="images/3793633099_3e1e53e4ac_o.jpg" class="lottery-unit-a">
+                        <img src="images/8.png" /></a></td>
+                    <td class="lottery-unit lottery-unit-19"><a href="images/3793633099_3e1e53e4ac_o.jpg" class="lottery-unit-a">
+                        <img src="images/7.png" /></a></td>
+                </tr>
+            </table>
         </div>
-        <!-- 内容区 -->
-        <div class="contents">
-            <ul id="items">
-            </ul>
-        </div>
-
-    </div>
-    <!-- 底部控制 -->
-    <div id="control">
-        <div class="ctrl_button" title="显示/隐藏" id="ctrl_hide">
-            <img alt="qrcode" src="img/arrow-left.png" /></div>
-
-        <div class="ctrl_button" title="二维码" id="ctrl_qrcode">
-            <img alt="qrcode" src="img/qrcode-ico.png" /></div>
-        <div class="ctrl_button" title="开始/暂停" id="ctrl_run">
-            <img alt="run" src="img/play.png" /></div>
-        <div class="ctrl_button" title="手动更新" id="ctrl_ref">
-            <img alt="ref" src="img/spinner.png" /></div>
-        <div class="ctrl_button" title="抽奖" id="ctrl_luck">
-            <img alt="luck" src="img/spinner2.png" /></div>
-        <div class="ctrl_button" title="实时投票" id="ctrl_vote">
-            <img alt="vote" src="img/vote.png" /></div>
-        <em class="load_text right">载入中……</em>
-    </div>
-    <!-- 抽奖层 -->
-    <div id="luck">
-        <div>
-            <img class="close_luck right" title="关闭" alt="close" src="img/close.png" />
-            <div class="goodluck">
-                <h1>幸运抽奖</h1>
-                <ul id="luck_now">
-                </ul>
-                <button class="btn_ex" id="luck_start">开始</button>
-                <button class="btn_ex" id="luck_com">确认</button>
-                <ul id="luck_result">
-                </ul>
-                <button class="btn_ex" id="luck_clear">清空结果</button><b id="luck_count" class="right"></b>
-            </div>
-        </div>
-    </div>
-    <!-- 投票层 -->
-    <div id="vote">
-        <div>
-            <div class="vote_head">
-                <div class="head">
-                    <div class="head_left">
-                        <div class="head_info">
-                            <h1>vote_name</h1>
-                        </div>
-                        <div class="head_flag"></div>
-                    </div>
-                    <div class="head_right">
-                        <img alt="bababa" src="img/bullhorn.png" />
-                        <h2>添加</h2>
-                        <h1>wechat_name</h1>
-                        <h3>发送<span> vote_key </span>即可投票</h3>
-                    </div>
-                    <div class="clear"></div>
-                </div>
-            </div>
-            <div id="vote_ctrl" class="right">
-                <img id="order_vote" class="bnt_vote" title="排序" alt="order_vote" src="img/numbered-list.png" />
-                <img id="ref_vote" class="bnt_vote" title="刷新" alt="ref_vote" src="img/spinner.png" />
-                <img id="close_vote" class="bnt_vote" title="关闭" alt="close" src="img/close.png" />
-
-            </div>
-
-            <div id="vote_result">
-                <ul id="vote_result_ul">
-                    <li id="vote_explain" class="vote_item" title="100%">
-                        <div class="vote_bar">
-                            <div style="height: 100%; border-bottom: 2px rgba(10,106,54,.8) solid">
-                                <div class="vote_num">0</div>
-                                <div class="vote_bar_o" style="background: rgba(10,106,54,.8)"></div>
-                            </div>
-                        </div>
-                        <div class="vote_id">︵编号︶</div>
-                        <div class="vote_name">总数</div>
-                    </li>
-                </ul>
-            </div>
-
-        </div>
-    </div>
-    <!-- 二维码图片 -->
-    <div id="qrcode">
-        <div>
-            <img class="close_qrcode right" title="关闭" alt="close" src="img/close.png" />
-            <img class="qrcode_big" alt="qrcode" src="img/qrcode.jpg" />
-        </div>
-    </div>
-    <!-- 背景图  -->
-    <img class="bg" src="img/bg.jpg" alt="bg" />
+    </form>
 </body>
 </html>

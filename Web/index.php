@@ -175,11 +175,64 @@ class wechatCallbackapiTest
         return $result;
     }
 
+    //回复图文消息
+    private function transmitNews($object, $newsArray)
+    {
+        if(!is_array($newsArray)){
+            return;
+        }
+        $itemTpl = "    <item>
+        <Title><![CDATA[%s]]></Title>
+        <Description><![CDATA[%s]]></Description>
+        <PicUrl><![CDATA[%s]]></PicUrl>
+        <Url><![CDATA[%s]]></Url>
+    </item>
+";
+        $item_str = "";
+        foreach ($newsArray as $item){
+            $item_str .= sprintf($itemTpl, $item['Title'], $item['Description'], $item['PicUrl'], $item['Url']);
+        }
+        $xmlTpl = "<xml>
+<ToUserName><![CDATA[%s]]></ToUserName>
+<FromUserName><![CDATA[%s]]></FromUserName>
+<CreateTime>%s</CreateTime>
+<MsgType><![CDATA[news]]></MsgType>
+<ArticleCount>%s</ArticleCount>
+<Articles>
+$item_str</Articles>
+</xml>";
+
+        $result = sprintf($xmlTpl, $object->FromUserName, $object->ToUserName, time(), count($newsArray));
+        return $result;
+    }
+
     //接收图片消息
     private function receiveImage($object)
     {
         $content = array("MediaId"=>$object->MediaId);
         $result = $this->transmitImage($object, $content);
+        return $result;
+    }
+    
+
+    //回复图片消息
+    private function transmitImage($object, $imageArray)
+    {
+        $itemTpl = "<Image>
+    <MediaId><![CDATA[%s]]></MediaId>
+</Image>";
+
+        $item_str = sprintf($itemTpl, $imageArray['MediaId']);
+
+        $xmlTpl = "<xml>
+<ToUserName><![CDATA[%s]]></ToUserName>
+<FromUserName><![CDATA[%s]]></FromUserName>
+<CreateTime>%s</CreateTime>
+<MsgType><![CDATA[image]]></MsgType>
+$item_str
+</xml>";
+
+        $result = sprintf($xmlTpl, $object->FromUserName, $object->ToUserName, time());
         return $result;
     }
 
@@ -235,27 +288,6 @@ class wechatCallbackapiTest
         return $result;
     }
 
-    //回复图片消息
-    private function transmitImage($object, $imageArray)
-    {
-        $itemTpl = "<Image>
-    <MediaId><![CDATA[%s]]></MediaId>
-</Image>";
-
-        $item_str = sprintf($itemTpl, $imageArray['MediaId']);
-
-        $xmlTpl = "<xml>
-<ToUserName><![CDATA[%s]]></ToUserName>
-<FromUserName><![CDATA[%s]]></FromUserName>
-<CreateTime>%s</CreateTime>
-<MsgType><![CDATA[image]]></MsgType>
-$item_str
-</xml>";
-
-        $result = sprintf($xmlTpl, $object->FromUserName, $object->ToUserName, time());
-        return $result;
-    }
-
     //回复语音消息
     private function transmitVoice($object, $voiceArray)
     {
@@ -298,37 +330,6 @@ $item_str
 </xml>";
 
         $result = sprintf($xmlTpl, $object->FromUserName, $object->ToUserName, time());
-        return $result;
-    }
-
-    //回复图文消息
-    private function transmitNews($object, $newsArray)
-    {
-        if(!is_array($newsArray)){
-            return;
-        }
-        $itemTpl = "    <item>
-        <Title><![CDATA[%s]]></Title>
-        <Description><![CDATA[%s]]></Description>
-        <PicUrl><![CDATA[%s]]></PicUrl>
-        <Url><![CDATA[%s]]></Url>
-    </item>
-";
-        $item_str = "";
-        foreach ($newsArray as $item){
-            $item_str .= sprintf($itemTpl, $item['Title'], $item['Description'], $item['PicUrl'], $item['Url']);
-        }
-        $xmlTpl = "<xml>
-<ToUserName><![CDATA[%s]]></ToUserName>
-<FromUserName><![CDATA[%s]]></FromUserName>
-<CreateTime>%s</CreateTime>
-<MsgType><![CDATA[news]]></MsgType>
-<ArticleCount>%s</ArticleCount>
-<Articles>
-$item_str</Articles>
-</xml>";
-
-        $result = sprintf($xmlTpl, $object->FromUserName, $object->ToUserName, time(), count($newsArray));
         return $result;
     }
 

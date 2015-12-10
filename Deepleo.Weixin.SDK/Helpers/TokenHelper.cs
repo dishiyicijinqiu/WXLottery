@@ -38,7 +38,7 @@ namespace Deepleo.Weixin.SDK.Helpers
             if (Status) throw new Exception(string.Format("Token Manager is already running."));
             Status = true;
             refreshToken();
-            _timer = new System.Timers.Timer(Interval*1000);
+            _timer = new System.Timers.Timer(Interval * 1000);
             _timer.Elapsed += delegate
             {
                 refreshToken();
@@ -70,9 +70,9 @@ namespace Deepleo.Weixin.SDK.Helpers
             try
             {
                 string newToken = BasicAPI.GetAccessToken(AppId, AppSecrect).access_token;
-                _token=newToken;
+                _token = newToken;
             }
-            catch(Exception ex) 
+            catch (Exception ex)
             {
                 if (ErrorEvent != null) ErrorEvent(this, new ThreadExceptionEventArgs(ex));
             }

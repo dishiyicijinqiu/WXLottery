@@ -118,9 +118,53 @@ namespace Web
                 }
                 try
                 {
+                    string token = WeixinInterface.tokenhelper.GetToken(false);
+                    var userinfo = UserAdminAPI.GetInfo(token, body.FromUserName.Value);
                     DbCommand cmd = DBHelper.Database.GetStoredProcCommand("P_CYFlow");
+                    DBHelper.Database.AddInParameter(cmd, "OP", DbType.String, "cycj");
                     DBHelper.Database.AddInParameter(cmd, "WXZH", DbType.String, body.FromUserName.Value);
-                    DBHelper.Database.AddInParameter(cmd, "UserName", DbType.String, body.FromUserName.Value);
+                    DBHelper.Database.AddInParameter(cmd, "WXName", DbType.String, userinfo.nickname);
+                    DBHelper.Database.AddInParameter(cmd, "HeadImgUrl", DbType.String, userinfo.headimgurl);
+                    DBHelper.Database.AddInParameter(cmd, "UserName", DbType.String, UserName);
+                    DBHelper.Database.ExecuteNonQuery(cmd);
+                    //return transferText(body, userinfo.nickname + "谢谢参与");
+                    //return transmitImage(body);
+                    return transmitNews(body, new List<WeixinNews>()
+                    {
+                        new WeixinNews() {
+                            Description="谢谢您参与本次抽奖活动",
+                            PicUrl=userinfo.headimgurl,
+                            Title="参与成功",
+                            Url="http://www.baidu.com"
+                        }
+                    });
+                }
+                catch (System.Data.SqlClient.SqlException ex)
+                {
+                    if (ex.Class != 11 || ex.State != 1)
+                        return transferText(body, "服务出现异常");
+                    return transferText(body, ex.Message);
+                }
+            }
+            else if (keyword == "更改抽奖姓名")
+            {
+                string UserName = keyword.Replace("更改抽奖姓名", string.Empty);
+                if (string.IsNullOrWhiteSpace(UserName))
+                {
+                    return transferText(body, "名字不可为空");
+                }
+                if (UserName.Trim().Length > 5)
+                {
+                    return transferText(body, "名字不可超过5个字（不含空格）");
+                }
+                try
+                {
+                    DbCommand cmd = DBHelper.Database.GetStoredProcCommand("P_CYFlow");
+                    DBHelper.Database.AddInParameter(cmd, "OP", DbType.String, "ggxm");
+                    DBHelper.Database.AddInParameter(cmd, "WXZH", DbType.String, body.FromUserName.Value);
+                    DBHelper.Database.AddInParameter(cmd, "WXNo", DbType.String, body.FromUserName.Value);
+                    DBHelper.Database.AddInParameter(cmd, "WXName", DbType.String, body.FromUserName.Value);
+                    DBHelper.Database.AddInParameter(cmd, "UserName", DbType.String, UserName);
                     DBHelper.Database.ExecuteNonQuery(cmd);
                 }
                 catch (System.Data.SqlClient.SqlException ex)
@@ -129,11 +173,7 @@ namespace Web
                         return transferText(body, "服务出现异常");
                     return transferText(body, ex.Message);
                 }
-                return transferText(body, "谢谢参与");
-            }
-            else if (keyword == "更改抽奖姓名")
-            {
-                return transferText(body, "该功能还未实现");
+                return transferText(body, "更改成功");
             }
             else if (keyword == "查询审核状态")
             {
@@ -180,6 +220,45 @@ namespace Web
                                                    body.FromUserName.Value, body.ToUserName.Value, DateTime.Now.ToBinary(), message);
         }
 
+
+        //回复图文消息
+        private string transmitNews(dynamic body, List<WeixinNews> newsarray)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("<xml>");
+            sb.AppendFormat("<ToUserName><![CDATA[{0}]]></ToUserName>", body.FromUserName.Value);
+            sb.AppendFormat("<FromUserName><![CDATA[{0}]]></FromUserName>", body.ToUserName.Value);
+            sb.AppendFormat("<CreateTime>{0}</CreateTime>", DateTime.Now.ToBinary());
+            sb.Append("<MsgType><![CDATA[news]]></MsgType>");
+            sb.AppendFormat("<ArticleCount>{0}</ArticleCount>", newsarray.Count);
+            sb.Append("<Articles>");
+            foreach (WeixinNews item in newsarray)
+            {
+                sb.Append("<item>");
+                sb.AppendFormat("<Title><![CDATA[{0}]]></Title>", item.Title);
+                sb.AppendFormat("<Description><![CDATA[{0}]]></Description>", item.Description);
+                sb.AppendFormat("<PicUrl><![CDATA[{0}]]></PicUrl>", item.PicUrl);
+                sb.AppendFormat("<Url><![CDATA[{0}]]></Url>", item.PicUrl);
+                sb.Append("</item>");
+            }
+            sb.Append("</Articles>");
+            sb.Append("</xml>");
+            return sb.ToString();
+        }
+
+        //回复图片消息
+        private string transmitImage(dynamic body)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("<xml>");
+            sb.AppendFormat("<ToUserName><![CDATA[{0}]]></ToUserName>", body.FromUserName.Value);
+            sb.AppendFormat("<FromUserName><![CDATA[{0}]]></FromUserName>", body.ToUserName.Value);
+            sb.AppendFormat("<CreateTime>{0}</CreateTime>", DateTime.Now.ToBinary());
+            sb.Append("<MsgType><![CDATA[image]]></MsgType>");
+            sb.AppendFormat("<Image><MediaId>< ![CDATA[{0}]] ></MediaId></Image>", body.MediaId.Value);
+            sb.Append("</xml>");
+            return sb.ToString();
+        }
     }
     public class WeixinNews
     {
